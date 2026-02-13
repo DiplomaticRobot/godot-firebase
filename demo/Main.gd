@@ -21,9 +21,23 @@ func _ready() -> void:
 		_ios_texture_rect.hide()
 		_active_texture_rect = _android_texture_rect
 
+	godot_firebase_node.initialization_completed.connect(_on_initialization_completed)
+	godot_firebase_node.initialization_error.connect(_on_initialization_error)
+
+	_print_to_screen("Initializing Firebase...")
+	godot_firebase_node.initialize()
+
+
+func _on_initialization_completed() -> void:
+	_print_to_screen("Firebase initialized successfully!")
+
+
+func _on_initialization_error(a_error_message: String) -> void:
+	_print_to_screen("Firebase initialization error: %s" % a_error_message, true)
+
 
 func _on_get_button_pressed() -> void:
-	_print_to_screen("Get button pressed")
+	_print_to_screen("Initialized: %s" % str(godot_firebase_node.is_initialized()))
 
 
 func _print_to_screen(a_message: String, a_is_error: bool = false) -> void:

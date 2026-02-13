@@ -3,21 +3,42 @@
 //
 
 import Foundation
+import FirebaseCore
 
 @objc public class GodotFirebase: NSObject {
 
-	// TODO: callbacks to be set by the Objective-C bridge
-	@objc public var onThisHappened: ((_ info: [String: Any]) -> Void)?
+	// Callbacks to be set by the Objective-C++ bridge
+	@objc public var onInitializationCompleted: (() -> Void)?
+	@objc public var onInitializationError: ((_ errorMessage: String) -> Void)?
 
-	// TODO: members accessible from Objective-C
-	@objc static let isActiveKey = "is_active"
+	@objc public private(set) var isInitialized: Bool = false
 
 	override init() {
 		super.init()
-		// TODO
 	}
 
 	deinit {
-		// TODO
+	}
+
+	@objc public func initialize() {
+		if isInitialized {
+			onInitializationCompleted?()
+			return
+		}
+
+		if FirebaseApp.app() != nil {
+			isInitialized = true
+			onInitializationCompleted?()
+			return
+		}
+
+		do {
+			FirebaseApp.configure()
+			isInitialized = true
+			onInitializationCompleted?()
+		} catch {
+			let errorMsg = "Firebase initialization failed: \(error.localizedDescription)"
+			onInitializationError?(errorMsg)
+		}
 	}
 }

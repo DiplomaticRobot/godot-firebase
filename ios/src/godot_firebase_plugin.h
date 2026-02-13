@@ -14,8 +14,8 @@
 @class GodotFirebase;
 
 
-extern const String TEMPLATE_READY_SIGNAL;
-// TODO: Declare all signals
+extern const String INITIALIZATION_COMPLETED_SIGNAL;
+extern const String INITIALIZATION_ERROR_SIGNAL;
 
 
 class GodotFirebasePlugin : public Object {
@@ -23,12 +23,13 @@ class GodotFirebasePlugin : public Object {
 
 private:
 	static GodotFirebasePlugin* instance; // Singleton instance
+	GodotFirebase* godot_firebase;
 
 	static void _bind_methods();
 
 public:
-	Array get_godot_firebase();
-	// TODO: Declare all methods
+	void initialize();
+	bool is_initialized();
 
 	GodotFirebasePlugin();
 	~GodotFirebasePlugin();

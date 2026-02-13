@@ -67,11 +67,15 @@ class IosExportPlugin extends EditorExportPlugin:
 
 	func _export_begin(_features: PackedStringArray, _is_debug: bool, _path: String, _flags: int) -> void:
 		if _supports_platform(get_export_platform()):
+			# NOTE: When upgrading to Godot 4.6+, replace add_ios_* calls with:
+			#   add_apple_embedded_platform_framework()
+			#   add_apple_embedded_platform_embedded_framework()
+			#   add_apple_embedded_platform_linker_flags()
 			for __framework in IOS_FRAMEWORKS:
-				add_apple_embedded_platform_framework(__framework)
+				add_ios_framework(__framework)
 
 			for __framework in IOS_EMBEDDED_FRAMEWORKS:
-				add_apple_embedded_platform_embedded_framework(__framework)
+				add_ios_embedded_framework(__framework)
 
 			for __flag in IOS_LINKER_FLAGS:
-				add_apple_embedded_platform_linker_flags(__flag)
+				add_ios_linker_flags(__flag)

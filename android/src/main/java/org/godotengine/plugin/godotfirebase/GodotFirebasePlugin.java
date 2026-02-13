@@ -19,14 +19,18 @@ import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.plugin.SignalInfo;
 import org.godotengine.godot.plugin.UsedByGodot;
 
+import com.google.firebase.FirebaseApp;
+
 
 public class GodotFirebasePlugin extends GodotPlugin {
 	public static final String CLASS_NAME = GodotFirebasePlugin.class.getSimpleName();
 	static final String LOG_TAG = "godot::" + CLASS_NAME;
 
 
-	static final String TEMPLATE_READY_SIGNAL = "template_ready";
-	// TODO: Define all signals
+	static final String INITIALIZATION_COMPLETED_SIGNAL = "initialization_completed";
+	static final String INITIALIZATION_ERROR_SIGNAL = "initialization_error";
+
+	private boolean isInitialized = false;
 
 	public GodotFirebasePlugin(Godot godot) {
 		super(godot);
@@ -40,40 +44,61 @@ public class GodotFirebasePlugin extends GodotPlugin {
 	@Override
 	public Set<SignalInfo> getPluginSignals() {
 		Set<SignalInfo> signals = new HashSet<>();
-		signals.add(new SignalInfo(TEMPLATE_READY_SIGNAL, Dictionary.class));
-
-		// TODO: Register all signals
+		signals.add(new SignalInfo(INITIALIZATION_COMPLETED_SIGNAL));
+		signals.add(new SignalInfo(INITIALIZATION_ERROR_SIGNAL, String.class));
 
 		return signals;
 	}
 
 	@Override
 	public View onMainCreate(Activity activity) {
-		// TODO: Godot activity is ready
-
 		return super.onMainCreate(activity);
 	}
 
 	@Override
 	public void onGodotSetupCompleted() {
 		super.onGodotSetupCompleted();
-
-		// TODO: Godot is ready
 	}
 
 	@UsedByGodot
-	public Object[] get_godot_firebase() {
-		Log.d(LOG_TAG, "get_godot_firebase() invoked");
+	public void initialize() {
+		Log.d(LOG_TAG, "initialize() invoked");
 
-		List<Dictionary> resultList = new ArrayList<>();
+		if (isInitialized) {
+			emitSignal(INITIALIZATION_COMPLETED_SIGNAL);
+			return;
+		}
 
-		// TODO: Plugin method
+		try {
+			Activity activity = getActivity();
+			if (activity == null) {
+				String error = "Activity is null, cannot initialize Firebase";
+				Log.e(LOG_TAG, error);
+				emitSignal(INITIALIZATION_ERROR_SIGNAL, error);
+				return;
+			}
 
-		return resultList.toArray();
+			if (FirebaseApp.getApps(activity).isEmpty()) {
+				FirebaseApp.initializeApp(activity);
+			}
+
+			isInitialized = true;
+			Log.d(LOG_TAG, "Firebase initialized successfully");
+			emitSignal(INITIALIZATION_COMPLETED_SIGNAL);
+		} catch (Exception e) {
+			String error = "Firebase initialization failed: " + e.getMessage();
+			Log.e(LOG_TAG, error, e);
+			emitSignal(INITIALIZATION_ERROR_SIGNAL, error);
+		}
+	}
+
+	@UsedByGodot
+	public boolean is_initialized() {
+		return isInitialized;
 	}
 
 	@Override
 	public void onMainDestroy() {
-		// TODO: Plugin cleanup
+		isInitialized = false;
 	}
 }

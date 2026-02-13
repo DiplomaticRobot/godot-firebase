@@ -6,7 +6,8 @@
 @icon("icon.png")
 class_name GodotFirebase extends Node
 
-signal template_ready(a_dict: Dictionary)
+signal initialization_completed()
+signal initialization_error(error_message: String)
 
 const PLUGIN_SINGLETON_NAME: String = "@pluginName@"
 
@@ -32,22 +33,29 @@ func _update_plugin() -> void:
 
 
 func _connect_signals() -> void:
-	_plugin_singleton.connect("template_ready", _on_template_ready)
+	_plugin_singleton.connect("initialization_completed", _on_initialization_completed)
+	_plugin_singleton.connect("initialization_error", _on_initialization_error)
 
 
-func get_godot_firebase() -> Array:
-	var __result: Array = []
-
+func initialize() -> void:
 	if _plugin_singleton:
-		__result = _plugin_singleton.get_godot_firebase()
+		_plugin_singleton.initialize()
 	else:
 		GodotFirebase.log_error("%s plugin not initialized" % PLUGIN_SINGLETON_NAME)
 
-	return __result
+
+func is_initialized() -> bool:
+	if _plugin_singleton:
+		return _plugin_singleton.is_initialized()
+	return false
 
 
-func _on_template_ready(a_dict: Dictionary) -> void:
-	template_ready.emit(a_dict)
+func _on_initialization_completed() -> void:
+	initialization_completed.emit()
+
+
+func _on_initialization_error(a_error_message: String) -> void:
+	initialization_error.emit(a_error_message)
 
 
 static func log_error(a_description: String) -> void:
